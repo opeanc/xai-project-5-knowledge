@@ -7,3 +7,315 @@
 %   TCAV,
 %   concept bottleneck models.
 %
+\chapter{Interpretability and Explainable AI}
+
+\section{Introduzione}
+
+L'\textit{Explainable AI} (XAI) rappresenta uno degli aspetti fondamentali nello studio dei moderni sistemi di Intelligenza Artificiale, specialmente in ambiti critici come quello medico.
+
+L'obiettivo principale dell'XAI è comprendere:
+
+\begin{itemize}
+    \item come un modello prende decisioni;
+    \item quali informazioni utilizza;
+    \item quali rappresentazioni interne apprende;
+    \item quanto tali decisioni siano affidabili e interpretabili.
+\end{itemize}
+
+Nel contesto dei Vision-Language Models medici, l'interpretabilità assume un ruolo centrale, poiché è necessario comprendere non soltanto il risultato prodotto dal modello, ma anche il ragionamento che ha portato a quella determinata predizione.
+
+Storicamente, le tecniche di interpretabilità possono essere suddivise in:
+
+\begin{itemize}
+    \item tecniche di interpretabilità locale;
+    \item tecniche di interpretabilità globale;
+    \item approcci basati sui concetti (\textit{Concept-Based Explainability}).
+\end{itemize}
+
+\section{Interpretabilità Locale}
+
+Le tecniche di interpretabilità locale cercano di rispondere alla seguente domanda:
+
+\begin{quote}
+``Quali parti di \textbf{questa specifica immagine} hanno influenzato maggiormente la decisione del modello?''
+\end{quote}
+
+Questi approcci forniscono spiegazioni focalizzate su singole predizioni.
+
+\subsection{Saliency Maps}
+
+Le \textit{Saliency Maps} sono una delle tecniche più classiche di interpretabilità.
+
+L'idea consiste nel produrre una rappresentazione visiva in cui:
+
+\begin{itemize}
+    \item le regioni più luminose indicano le aree maggiormente influenti;
+    \item le regioni meno luminose risultano meno rilevanti per la decisione finale.
+\end{itemize}
+
+\subsubsection{Funzionamento}
+
+Le mappe di salienza utilizzano il calcolo dei gradienti rispetto ai pixel di input.
+
+In particolare, si misura quanto una piccola variazione di un pixel influenzi la probabilità associata alla classe predetta.
+
+Formalmente, viene calcolata la derivata della predizione rispetto ai pixel dell'immagine:
+
+\[
+\frac{\partial y}{\partial x}
+\]
+
+dove:
+
+\begin{itemize}
+    \item $x$ rappresenta l'immagine di input;
+    \item $y$ rappresenta l'output del modello.
+\end{itemize}
+
+Pixel con gradienti elevati vengono considerati maggiormente rilevanti.
+
+\subsubsection{Applicazioni}
+
+Le Saliency Maps vengono spesso utilizzate per effettuare \textit{sanity checks} sul comportamento del modello.
+
+Ad esempio:
+
+\begin{itemize}
+    \item se un modello diagnostica una polmonite osservando effettivamente l'area polmonare, il comportamento risulta coerente;
+    
+    \item se invece la predizione dipende da elementi irrilevanti, come artefatti o annotazioni presenti nell'immagine, il modello potrebbe aver appreso correlazioni spurie.
+\end{itemize}
+
+\subsubsection{Limiti}
+
+Le principali limitazioni delle Saliency Maps includono:
+
+\begin{itemize}
+    \item spiegazioni fortemente localizzate. Questo è ottimo ma fallisce, poi, nel catturare la struttura semantica i.e. le mappe ti dicono \textit{dove} il modello guarda, ma non \textit{cosa} stia effettivamente comprendendo;
+    
+    \item elevata rumorosità delle visualizzazioni;        
+\end{itemize}
+
+\subsection{Grad-CAM}
+
+\textit{Grad-CAM} (\textit{Gradient-weighted Class Activation Mapping}) rappresenta un'evoluzione delle Saliency Maps tradizionali.
+
+Il metodo produce una \textit{heatmap} sovrapposta all'immagine originale, evidenziando le regioni maggiormente rilevanti per una specifica predizione.
+
+\subsubsection{Funzionamento}
+
+A differenza delle Saliency Maps classiche, Grad-CAM non calcola i gradienti direttamente sui pixel di input.
+
+Il metodo opera invece sugli ultimi layer convoluzionali della rete neurale, dove le informazioni visive risultano già aggregate in pattern e feature più ad alto livello.
+
+Le feature maps vengono pesate in base alla loro importanza rispetto alla classe target.
+
+\subsubsection{Vantaggi}
+
+Rispetto alle Saliency Maps, Grad-CAM produce visualizzazioni:
+
+\begin{itemize}
+    \item meno rumorose;
+    \item più stabili;
+    \item maggiormente interpretabili dall'essere umano.
+\end{itemize}
+
+Questo rende Grad-CAM particolarmente utilizzato in ambito medico.
+
+\subsubsection{Limiti}
+
+Nonostante i miglioramenti qualitativi, Grad-CAM presenta ancora importanti limitazioni:
+
+\begin{itemize}
+    \item fornisce spiegazioni locali;
+    \item non descrive la struttura semantica interna del modello;
+    \item non permette di comprendere i concetti latenti appresi.
+\end{itemize}
+
+\subsection{Attention Visualization}
+
+Le tecniche di \textit{Attention Visualization} derivano dalle architetture Transformer, utilizzate sia nei Large Language Models sia nei moderni Vision-Language Models.
+
+\subsubsection{Self-Attention}
+
+I Transformer utilizzano il meccanismo di \textit{Self-Attention}, attraverso cui il modello assegna pesi differenti alle varie parti dell'input.
+
+Nel caso delle immagini:
+
+\begin{itemize}
+    \item alcune regioni ricevono maggiore attenzione;
+    \item altre risultano meno rilevanti.
+\end{itemize}
+
+Visualizzando tali pesi è possibile osservare come il modello colleghi differenti porzioni dell'input.
+
+\subsubsection{Limiti}
+
+Nonostante l'apparente trasparenza, esistono importanti problematiche interpretative.
+
+In molti casi:
+
+\begin{itemize}
+    \item l'attenzione non corrisponde realmente alla spiegazione del modello;
+        
+    \item il modello, spesso, presta attenzione a punti dell'immagine \textbf{apparentemente} vuoti o casuali per ragioni puramente matematiche, rendendo i pattern di attenzione difficili da interpretare semanticamente.
+\end{itemize}
+
+Per questo motivo, l'attenzione non viene considerata una spiegazione completa del comportamento del modello.
+
+\section{Interpretabilità Globale}
+
+A differenza delle tecniche locali, gli approcci di interpretabilità globale cercano di comprendere cosa il modello abbia appreso complessivamente.
+
+\subsection{Feature Visualization}
+
+La \textit{Feature Visualization} cerca di rispondere alla seguente domanda:
+
+\begin{quote}
+``Quale concetto viene rappresentato da uno specifico neurone?''
+\end{quote}
+
+\subsubsection{Funzionamento}
+
+Il processo avviene in maniera inversa rispetto alla classificazione tradizionale.
+
+Si parte da un'immagine casuale o rumorosa, che viene progressivamente modificata tramite ottimizzazione matematica fino a massimizzare l'attivazione di un determinato neurone.
+
+L'immagine finale rappresenta quindi il pattern che massimizza la risposta del neurone selezionato.
+
+Questo ci permette di capire cosa sta cercando quello specifico neurone all'interno dell'immagine. Generalmente:
+
+\begin{itemize}
+    \item i primi layer apprendono pattern semplici, come bordi e linee;
+    
+    \item i layer intermedi apprendono texture e strutture;
+    
+    \item i layer profondi apprendono forme e concetti complessi.
+\end{itemize}
+
+\subsubsection{Limiti}
+
+Uno dei principali problemi riguarda la \textit{polisemanticità} dei neuroni.
+
+Un singolo neurone può infatti attivarsi rispetto a concetti molto differenti tra loro. Ad esempio, un neurone potrebbe attivarsi sia per le facce dei gatti, sia per la parte frontale delle auto.
+
+Di conseguenza:
+
+\begin{itemize}
+    \item le feature visualizzate risultano difficili da interpretare;
+    
+    \item i concetti appresi non risultano chiaramente separati;
+    
+    \item la traduzione in semantica medica diventa estremamente complessa.
+\end{itemize}
+
+\section{Concept-Based Explainability}
+
+Per superare i limiti delle tecniche tradizionali, la ricerca recente si è spostata verso la cosiddetta \textit{Concept-Based Explainability}.
+
+L'obiettivo di questi approcci è esprimere le predizioni del modello tramite concetti interpretabili e semanticamente comprensibili.
+
+\subsection{TCAV}
+
+\textit{TCAV} (\textit{Testing with Concept Activation Vectors}) è una tecnica progettata per misurare quanto un concetto di alto livello influenzi le decisioni del modello.
+
+\subsubsection{Funzionamento}
+
+Il metodo richiede un intervento umano esplicito.
+
+Il processo generale è il seguente:
+
+\begin{enumerate}
+    \item vengono fornite immagini contenenti uno specifico concetto (ad es. 100 foto di "versamento pleurico");
+    
+    \item vengono fornite immagini prive di tale concetto (ad es, 100 foto, ma senza essere fornite di concetto);
+    
+    \item il modello analizza queste foto nel suo spazio latente i.e. viene fatto l'embeddings delle foto ed il modello visualizza dove posizionarle all'interno dello spazio latente;
+    
+    \item viene calcolato un vettore nello spazio latente, formalmente detto \textit{direzione matematica} o \textit{CAV}, che separa i due gruppi di foto;
+    
+    \item si controlla se spostarsi lungo quella direzione matematica fa aumentare le probabilità che il modello predica "Malato". Se sì, il concetto è importante.
+\end{enumerate}
+
+\subsubsection{Limiti}
+
+Il principale limite di TCAV consiste nella necessità di annotazioni manuali.
+
+L'essere umano deve infatti definire esplicitamente:
+
+\begin{itemize}
+    \item quali concetti utilizzare;
+    \item quali esempi appartengano a ciascun concetto.
+\end{itemize}
+
+Questo rende il metodo costoso e difficilmente scalabile.
+
+\subsection{Concept Bottleneck Models}
+
+A differenza degli altri metodi, che cercano di spiegare un modello black-box dopo che è stato addrestrato, i \textit{Concept Bottleneck Models} (CBM) rappresentano un approccio differente.
+
+In questo caso, il modello viene progettato per essere interpretabile fin dalla fase di training.
+
+\subsubsection{Architettura}
+
+L'architettura introduce un livello intermedio chiamato \textit{bottleneck}, contenente concetti interpretabili.
+
+Il flusso generale diventa:
+
+\[
+\text{Immagine} \rightarrow \text{Concetti} \rightarrow \text{Predizione Finale}
+\]
+
+La prima parte del modello non predice la malattia, ma ha solo il compito di predirre esplicitamente concetti medici interpretabili, ad esempio:
+
+\begin{itemize}
+    \item opacità 90\%;
+    \item cardiomegalia 10\%;
+    \item presenza di fratture 0\%.
+\end{itemize}
+
+Successivamente, tali concetti vengono utilizzati per produrre la diagnosi finale.
+
+\subsubsection{Vantaggi}
+
+I principali vantaggi dei CBM includono:
+
+\begin{itemize}
+    \item elevata interpretabilità;
+    
+    \item possibilità di correggere manualmente i concetti intermedi così da permettere al modello di ricalcolare la diagnosi finale;
+\end{itemize}
+
+\subsubsection{Limiti}
+
+Anche in questo caso emergono importanti problematiche:
+
+\begin{itemize}
+    \item necessità di dataset fortemente annotati e, dunque, elevato costo umano di annotazione;
+    
+    \item limitata scalabilità verso domini complessi.
+\end{itemize}
+
+\section{Collegamento con il Progetto}
+
+Sia TCAV che i Concept Bottleneck Models condividono una limitazione fondamentale:
+
+\begin{quote}
+la necessità di definire manualmente i concetti.
+\end{quote}
+
+Il framework \textit{MedConcept} e gli approcci basati su \textit{Sparse Autoencoders} nascono proprio con l'obiettivo di superare questo problema.
+
+L'idea centrale consiste nello scoprire automaticamente concetti latenti direttamente dalle rappresentazioni neurali, senza richiedere annotazioni manuali preventive.
+
+Questo approccio punta a ottenere:
+
+\begin{itemize}
+    \item interpretabilità semantica;
+    
+    \item scoperta non supervisionata dei concetti;
+    
+    \item maggiore scalabilità;
+    
+    \item migliore comprensione delle rappresentazioni latenti dei Vision-Language Models medici.
+\end{itemize}
