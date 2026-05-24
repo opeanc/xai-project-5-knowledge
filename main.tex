@@ -1,0 +1,37 @@
+\documentclass[a4paper,12pt]{report}
+
+\input{preamble}
+
+% Bibliography support
+\usepackage[backend=biber]{biblatex}
+\usepackage{bookmark}
+
+% Bibliography
+\addbibresource{references.bib}
+
+\title{XAI Project 5 - Unsupervised Concept Discovery and Evaluation for Medical Vision-Language Models}
+\author{Benvenuto Carmine Francesco, Colle Nicolò, Lopez Marc'Antonio}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\clearpage
+
+% Ensure bibliography entries are considered even without explicit \cite commands
+\nocite{*}
+
+\include{sections/00_overview}
+\include{sections/01_vlm}
+\include{sections/02_interpretability}
+\include{sections/03_sparse_autoencoders}
+\include{sections/04_medconcept}
+\include{sections/05_evaluation}
+\include{sections/06_limitations}
+\include{sections/07_project_ideas}
+\include{sections/08_experiments}
+
+\printbibliography
+
+\end{document}

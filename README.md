@@ -1,0 +1,2 @@
+Knowledge base, research notes and LaTeX documentation for the medical XAI Project "*Unsupervised Concept Discovery and Evaluation for Medical Vision–Language Models*".
+[Here](https://github.com/LookUpMark/xai-project-5) the main repository of our project.

@@ -1,0 +1,195 @@
+%
+% Informazioni su:
+%   Vision-Language Models,
+%   CLIP,
+%   BioCLIP,
+%   MedCLIP,
+%   embeddings,
+%   latent space.
+%
+\chapter{Vision-Language Models}
+
+\section{Introduzione ai Vision-Language Models}
+
+I \textit{Vision-Language Models} (VLM) sono modelli progettati per elaborare e comprendere simultaneamente due differenti modalità di informazione:
+
+\begin{itemize}
+    \item la componente visiva, costituita da immagini;
+    \item la componente linguistica, costituita da testo naturale.
+\end{itemize}
+
+L'obiettivo principale di questi modelli è creare una connessione semantica tra contenuto visivo e descrizioni testuali.
+
+In ambito medico, questo significa associare immagini diagnostiche, come radiografie o risonanze magnetiche, a referti clinici e descrizioni mediche.
+
+Ad alto livello, il funzionamento di un VLM può essere paragonato al comportamento di un medico durante una diagnosi:
+
+\begin{itemize}
+    \item osserva immagini cliniche;
+    \item legge informazioni testuali;
+    \item collega pattern visivi a concetti medici.
+\end{itemize}
+
+Un Vision-Language Model cerca quindi di apprendere automaticamente queste associazioni tra elementi visivi e linguaggio clinico.
+
+Ad esempio, dato un esame radiografico toracico, un VLM può determinare se l'immagine risulti semanticamente associata a descrizioni come:
+
+\begin{itemize}
+    \item ``versamento pleurico'';
+    \item ``polmoni sani'';
+    \item ``opacità polmonare''.
+\end{itemize}
+
+\section{Architettura Generale dei VLM}
+
+La maggior parte dei moderni Vision-Language Models utilizza un'architettura composta da due rami distinti:
+
+\begin{itemize}
+    \item un \textbf{Image Encoder};
+    \item un \textbf{Text Encoder}.
+\end{itemize}
+
+\subsection{Image Encoder}
+
+L'\textit{Image Encoder} ha il compito di processare immagini e trasformarle in rappresentazioni numeriche compatte (embeddings).
+
+Tra le architetture maggiormente utilizzate troviamo:
+
+\begin{itemize}
+    \item Vision Transformers (ViT);
+    \item ResNet;
+    \item CNN profonde.
+\end{itemize}
+
+L'encoder estrae pattern visivi rilevanti dall'immagine e li converte in una rappresentazione latente.
+
+\subsection{Text Encoder}
+
+Il \textit{Text Encoder} elabora invece il testo naturale associato alle immagini.
+
+Tipicamente vengono utilizzate architetture Transformer, tra cui:
+
+\begin{itemize}
+    \item BERT;
+    \item BioBERT;
+    \item ClinicalBERT.
+\end{itemize}
+
+Anche il testo viene trasformato in una rappresentazione numerica \textbf{nello stesso} spazio latente dell'immagine.
+
+\section{Contrastive Learning}
+
+Il meccanismo di training più diffuso nei VLM moderni è il cosiddetto \textit{Contrastive Learning}.
+
+Durante l'addestramento, il modello riceve grandi quantità di coppie corrette composte da:
+
+\begin{itemize}
+    \item un'immagine;
+    \item il relativo testo o referto clinico associato.
+\end{itemize}
+
+Il processo di apprendimento ha due obiettivi principali:
+
+\begin{itemize}
+    \item massimizzare la similarità tra immagini e testi semanticamente corretti;
+    \item minimizzare la similarità rispetto a coppie errate.
+\end{itemize}
+
+In altre parole, il modello impara ad avvicinare matematicamente immagini e descrizioni compatibili e ad allontanare quelle non correlate.
+
+Questo approccio consente la costruzione di uno spazio semantico \textbf{condiviso} tra immagini e linguaggio naturale.
+
+\section{CLIP, BioCLIP e MedCLIP}
+
+\subsection{CLIP}
+
+\textit{CLIP} (\textit{Contrastive Language-Image Pretraining}), introdotto da OpenAI, rappresenta uno dei principali modelli pionieristici nel campo dei Vision-Language Models.
+
+Il modello è stato addestrato su enormi quantità di immagini e testo generici provenienti da internet.
+
+CLIP risulta particolarmente efficace nel riconoscimento di oggetti e scene comuni, ma presenta importanti limitazioni nel dominio medico, poiché non è stato addestrato specificamente su dati clinici.
+
+\subsection{MedCLIP e BioCLIP}
+
+Per superare tali limitazioni, sono stati sviluppati modelli specializzati per il dominio biomedicale e medico, tra cui:
+
+\begin{itemize}
+    \item MedCLIP;
+    \item BioCLIP.
+\end{itemize}
+
+Questi modelli mantengono la stessa architettura generale di CLIP, ma vengono addestrati o ri-addestrati utilizzando dataset medici specializzati.
+
+Uno dei dataset più utilizzati è:
+
+\begin{itemize}
+    \item \textit{MIMIC-CXR}, contenente centinaia di migliaia di radiografie toraciche associate ai relativi referti clinici.
+\end{itemize}
+
+Grazie a questo addestramento specializzato, tali modelli acquisiscono una rappresentazione molto più accurata della semantica clinica.
+
+\section{Embeddings e Spazio Latente}
+
+Uno dei concetti fondamentali nei Vision-Language Models riguarda gli \textit{embeddings} e lo \textit{spazio latente}.
+
+\subsection{Embeddings}
+
+Come ben sappiamo, quando un'immagine o un testo viene processato dall'encoder corrispondente, il risultato non è direttamente interpretabile dall'essere umano, ma viene trasformato in un vettore numerico che prende il nome di \textit{embedding}.
+
+Un embedding può essere rappresentato come:
+
+\[
+[0.45, -1.2, 0.88, \dots]
+\]
+
+Ogni embedding costituisce una rappresentazione matematica del contenuto semantico dell'immagine o del testo.
+
+\subsection{Spazio Latente}
+
+Gli embeddings generati dal modello vengono collocati all'interno di uno spazio matematico multidimensionale chiamato \textit{latent space}.
+
+In questo spazio:
+
+\begin{itemize}
+    \item immagini semanticamente simili risultano vicine tra loro;
+    \item testi semanticamente simili risultano vicini tra loro;
+    \item Ma soprattutto, immagini e testi associati correttamente condividono regioni simili dello spazio latente.
+\end{itemize}
+
+La caratteristica fondamentale dei VLM moderni consiste nella costruzione di uno \textbf{spazio latente condiviso} tra immagini e testo.
+
+Ad esempio:
+
+\begin{itemize}
+    \item l'embedding di una radiografia contenente una frattura;
+    \item l'embedding della frase ``Frattura scomposta del femore destro'';
+\end{itemize}
+
+tenderanno a occupare posizioni molto vicine all'interno dello spazio latente.
+
+\section{Limiti dei Latent Spaces}
+
+Nonostante l'efficacia dei Vision-Language Models, le rappresentazioni latenti risultano estremamente difficili da interpretare.
+
+Le principali problematiche riguardano:
+
+\begin{itemize}
+    \item l'elevata dimensionalità delle rappresentazioni;
+    \item la natura polisemantica dei neuroni;
+    \item la mancanza di interpretabilità umana diretta.
+\end{itemize}
+
+Osservando singoli valori all'interno di un embedding, non è possibile comprendere chiaramente quale concetto medico venga rappresentato.
+
+Un determinato neurone potrebbe codificare simultaneamente:
+
+\begin{itemize}
+    \item caratteristiche anatomiche;
+    \item pattern patologici;
+    \item texture visive;
+    \item informazioni statistiche apprese durante il training.
+\end{itemize}
+
+Di conseguenza, sebbene i modelli producano risultati estremamente accurati, il loro processo decisionale rimane opaco.
+
+Questo rappresenta uno dei principali problemi nell'utilizzo clinico dei sistemi di Intelligenza Artificiale, poiché in medicina è fondamentale comprendere non solo \textit{cosa} il modello predica, ma anche \textit{perché} abbia preso una determinata decisione.

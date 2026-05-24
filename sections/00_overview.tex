@@ -1,0 +1,123 @@
+% 
+% Riassunto generale del problema.
+% 
+
+\chapter{Overview del Progetto}
+
+\section{Contesto: I Modelli Vision-Language Medici (VLM) e il Problema dell'Opacità}
+
+I \textit{Vision-Language Models} (VLM) sono sistemi in grado di elaborare congiuntamente immagini mediche (es. radiografie) e informazioni testuali cliniche (es. referti medici).
+
+Questi modelli hanno ottenuto prestazioni molto elevate in numerosi task clinici, tra cui:
+
+\begin{itemize}
+    \item classificazione di patologie;
+    \item segmentazione di immagini mediche;
+    \item generazione automatica di referti clinici.
+\end{itemize}
+
+Nonostante le ottime performance, i moderni VLM rimangono fortemente \textit{black-box}. Le loro rappresentazioni interne (latenti) sono infatti ad altissima dimensionalità e spesso \textit{polisemantiche}, ovvero un singolo neurone può attivarsi rispetto a più concetti medici contemporaneamente.
+
+Questa mancanza di trasparenza limita significativamente l'affidabilità e l'utilizzabilità di tali modelli in contesti clinici critici, dove interpretabilità e sicurezza risultano fondamentali.
+
+\section{Limiti delle Tecniche di Interpretabilità Tradizionali}
+
+Per affrontare il problema della natura \textit{black-box} delle deep neural networks, sono state sviluppate diverse tecniche di interpretabilità.
+
+Tra le più diffuse troviamo:
+
+\begin{itemize}
+    \item saliency maps basate sui gradienti;
+    \item attention visualization;
+    \item metodi di feature attribution.
+\end{itemize}
+
+Tuttavia, queste tecniche presentano importanti limitazioni:
+
+\begin{itemize}
+    \item forniscono principalmente spiegazioni \textbf{locali}, concentrate su singole predizioni;
+    
+    \item non riescono a catturare la reale struttura semantica di ciò che il modello ha imparato;
+    
+    \item risultano fortemente dipendenti dal task specifico;
+    
+    \item offrono una comprensione molto limitata di come il modello organizzi internamente la conoscenza medica.
+\end{itemize}
+
+Di conseguenza, le tecniche tradizionali non risultano sufficienti per ottenere una comprensione strutturata e semanticamente significativa dei modelli Vision-Language in ambito medico.
+
+\section{Concept-Based Explainability}
+
+Una direzione di ricerca più recente è rappresentata dalla cosiddetta \textit{Concept-Based Explainability}.
+
+L'obiettivo di questi approcci è spiegare il comportamento del modello attraverso concetti interpretabili e semanticamente comprensibili per un essere umano, invece che tramite semplici evidenziazioni di pixel o regioni dell'immagine.
+
+Negli ultimi anni sono stati proposti approcci non supervisionati in grado di scoprire automaticamente concetti latenti direttamente dalle rappresentazioni interne dei modelli pre-addestrati, senza la necessità di annotazioni manuali costose.
+
+Tra questi approcci, gli \textbf{Sparse Autoencoders (SAE)} si sono dimostrati particolarmente promettenti per districare (\textit{disentangle}) le rappresentazioni neurali interne (latenti), generalmente estremamente complesse, e trasformarle in \textit{features} interpretabili e semanticamente significative.
+
+\section{Il Framework MedConcept}
+
+Il progetto prende forte ispirazione dal framework \textit{MedConcept}, che introduce una pipeline non supervisionata per l'estrazione di concetti medici latenti da Vision-Language Models pre-addestrati.
+
+L'idea principale del framework consiste nel:
+
+\begin{itemize}
+    \item usare gli Sparse Autoencoders per identificare le attivazioni dei concetti a livello del singolo neurone;
+    
+    \item allineare tali concetti ad un vocabolario medico curato, derivato da ontologie ufficiali come lo \textit{Unified Medical Language System (UMLS)}).
+\end{itemize}
+
+Uno dei principali vantaggi di questo approccio è che la scoperta dei concetti avviene senza supervisione esplicita, permettendo quindi al metodo di generalizzare su dataset e task differenti.
+
+\section{Valutazione e Sfide Aperte}
+
+Uno degli aspetti più complessi riguarda la valutazione della qualità e della validità clinica dei concetti estratti i.e. come dimostriamo che i concetti scoperti siano effettivamente giusti?
+
+Storicamente, molte tecniche di interpretabilità venivano valutate tramite semplici ispezioni qualitative dei risultati. Tuttavia, questo approccio risulta soggettivo e difficilmente scalabile.
+
+Per questo motivo, lavori recenti hanno iniziato a utilizzare i \textit{Large Language Models (LLM)} come valutatori semantici esterni, con l'obiettivo di misurare l'allineamento tra i concetti estratti e l'evidenza clinica testuale.
+
+Nel framework MedConcept vengono introdotte tre categorie quantitative principali:
+
+\begin{itemize}
+    \item \textbf{Aligned}: il concetto estratto è semanticamente supportato dall'evidenza clinica;
+    
+    \item \textbf{Unaligned}: il concetto estratto contraddice o non corrisponde all'evidenza disponibile;
+    
+    \item \textbf{Uncertain}: l'evidenza disponibile risulta insufficiente o ambigua.
+\end{itemize}
+
+Nonostante i recenti progressi, rimangono ancora numerose problematiche aperte:
+
+\begin{itemize}
+    \item i concetti scoperti automaticamente potrebbero non possedere reale validità clinica;
+    
+    \item le rappresentazioni estratte potrebbero non essere robuste rispetto a dataset o architetture differenti;
+    
+    \item i referti clinici utilizzati come evidenza potrebbero essere incompleti o rumorosi;
+    
+    \item gli LLM utilizzati come valutatori possono introdurre ulteriori bias semantici;
+    
+    \item gli approcci attuali tendono a trattare i concetti come entità isolate, ignorando relazioni strutturate fondamentali in medicina, come gerarchie anatomiche o dipendenze causali.
+\end{itemize}
+
+\section{Direzione del Progetto}
+
+L'obiettivo di questo progetto è studiare, analizzare e potenzialmente migliorare pipeline di \textit{concept-based explainability} per Vision-Language Models in ambito medico.
+
+Particolare attenzione verrà dedicata a:
+
+\begin{itemize}
+    \item sparse representation learning;
+    
+    \item estrazione di feature interpretabili;
+    
+    \item allineamento semantico basato su ontologie mediche;
+    
+    \item metodologie di valutazione semantica;
+    
+    \item robustezza e validità clinica dei concetti estratti;
+    
+    \item modellazione di relazioni strutturate tra concetti medici.
+\end{itemize}
