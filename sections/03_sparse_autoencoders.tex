@@ -7,3 +7,272 @@
 %   sparse features,
 %   latent neurons.
 %
+\chapter{Sparse Autoencoders and Mechanistic Interpretability}
+
+\section{Introduzione}
+
+Uno dei principali problemi dei moderni Vision-Language Models riguarda la scarsa interpretabilità delle rappresentazioni latenti interne.
+
+Come discusso nei capitoli precedenti, i neuroni presenti nei livelli nascosti delle reti neurali tendono a codificare simultaneamente molteplici concetti differenti, rendendo estremamente difficile comprendere il reale significato delle attivazioni interne.
+
+Per affrontare questo problema, la ricerca recente si è concentrata su tecniche di:
+
+\begin{itemize}
+    \item \textit{Mechanistic Interpretability};
+    \item \textit{Sparse Representation Learning};
+    \item \textit{Disentanglement} delle rappresentazioni neurali.
+\end{itemize}
+
+In questo contesto, gli \textit{Sparse Autoencoders} (SAE) rappresentano uno degli approcci più promettenti per estrarre concetti interpretabili dai latent spaces dei Vision-Language Models.
+
+\section{Teoria degli Autoencoder}
+
+Prima di introdurre gli Sparse Autoencoders, è necessario comprendere il funzionamento di un Autoencoder standard.
+
+Un \textit{Autoencoder} è una rete neurale progettata per apprendere una rappresentazione compatta dei dati di input.
+
+L'obiettivo principale consiste nel ricostruire l'input originale dopo averlo fatto passare attraverso una rappresentazione compressa.
+
+\section{Architettura di un Autoencoder}
+
+Un Autoencoder è generalmente composto da due componenti principali:
+
+\begin{itemize}
+    \item un \textbf{Encoder};
+    \item un \textbf{Decoder}.
+\end{itemize}
+
+\subsection{Encoder}
+
+L'Encoder prende in input i dati originali e li trasforma in una rappresentazione latente compressa.
+
+Formalmente:
+
+\[
+h = f(x)
+\]
+
+dove:
+
+\begin{itemize}
+    \item $x$ rappresenta l'input originale;
+    \item $h$ rappresenta la rappresentazione latente;
+    \item $f(\cdot)$ rappresenta la funzione appresa dall'encoder.
+\end{itemize}
+
+\subsection{Decoder}
+
+Il Decoder riceve la rappresentazione latente e tenta di ricostruire l'input iniziale:
+
+\[
+r = g(h)
+\]
+
+dove:
+
+\begin{itemize}
+    \item $h$ è il vettore latente;
+    \item $r$ rappresenta la ricostruzione finale;
+    \item $g(\cdot)$ rappresenta la funzione del decoder.
+\end{itemize}
+
+L'obiettivo dell'addestramento consiste nel minimizzare la differenza tra input originale e ricostruzione:
+
+\[
+r \approx x
+\]
+
+\subsection{Bottleneck}
+
+L'elemento fondamentale di un Autoencoder è il cosiddetto \textit{bottleneck}.
+
+Poiché la rappresentazione latente ha dimensionalità ridotta rispetto all'input originale, la rete non può semplicemente memorizzare i dati.
+
+Il modello è quindi costretto a:
+
+\begin{itemize}
+    \item apprendere pattern rilevanti;
+    \item identificare strutture statistiche significative;
+    \item comprimere le informazioni più importanti.
+\end{itemize}
+
+\section{Mechanistic Interpretability}
+
+La \textit{Mechanistic Interpretability} rappresenta un ramo recente dell'Explainable AI che cerca di analizzare le reti neurali come sistemi matematici interpretabili.
+
+L'obiettivo consiste nel trattare le reti neurali come sistemi analizzabili tramite \textit{reverse engineering}, analogamente a:
+
+\begin{itemize}
+    \item programmi software compilati;
+    \item circuiti elettronici;
+    \item sistemi biologici complessi.
+\end{itemize}
+
+Si cerca di comprendere:
+
+\begin{itemize}
+    \item il ruolo dei singoli neuroni;
+    \item le trasformazioni effettuate dai layer;
+    \item la struttura interna delle rappresentazioni latenti.
+\end{itemize}
+
+\subsection{Neuroni Latenti}
+
+Nei Vision-Language Models, i neuroni presenti nei livelli nascosti costituiscono le cosiddette rappresentazioni latenti.
+
+Tali neuroni codificano informazioni astratte relative a:
+
+\begin{itemize}
+    \item forme;
+    \item texture;
+    \item pattern anatomici;
+    \item concetti semantici;
+    \item relazioni statistiche.
+\end{itemize}
+
+\subsection{Polisemanticità}
+
+Uno dei principali problemi riguarda la \textit{polisemanticità} dei neuroni.
+
+Un singolo neurone può infatti attivarsi simultaneamente rispetto a concetti completamente differenti.
+
+Ad esempio, un neurone potrebbe rispondere contemporaneamente a:
+
+\begin{itemize}
+    \item presenza di una frattura;
+    \item specifiche texture visive;
+    \item luminosità elevate;
+    \item forme anatomiche.
+\end{itemize}
+
+Questa sovrapposizione semantica rende estremamente difficile interpretare il reale significato delle attivazioni interne.
+
+\section{Sparse Autoencoders}
+
+Per affrontare il problema della polisemanticità, la ricerca recente ha introdotto gli \textit{Sparse Autoencoders}.
+
+L'obiettivo principale dei SAE consiste nel:
+
+\begin{itemize}
+    \item separare concetti differenti;
+    \item creare rappresentazioni sparse;
+    \item ottenere feature maggiormente interpretabili.
+\end{itemize}
+
+\subsection{Differenze rispetto agli Autoencoder Tradizionali}
+
+A differenza degli Autoencoder classici, gli Sparse Autoencoders non comprimono necessariamente l'informazione in uno spazio più piccolo.
+
+Molti SAE utilizzano invece un approccio chiamato:
+
+\begin{quote}
+\textit{Overcomplete Dictionary Learning}
+\end{quote}
+
+In questo scenario:
+
+\begin{itemize}
+    \item un embedding originale può avere dimensione 512;
+    \item il SAE può espandere tale rappresentazione a migliaia di dimensioni;
+    \item ogni dimensione può rappresentare una feature semantica specifica.
+\end{itemize}
+
+Ad esempio:
+
+\[
+512 \rightarrow 16000
+\]
+
+L'espansione dello spazio latente fornisce al modello sufficiente capacità per separare concetti differenti.
+
+\section{Sparsity}
+
+L'espansione dello spazio latente, da sola, non è sufficiente per ottenere interpretabilità.
+
+Per questo motivo viene introdotto un vincolo fondamentale:
+
+\begin{quote}
+\textbf{la sparsità}
+\end{quote}
+
+\subsection{Vincolo di Sparsità}
+
+Durante il training del SAE viene aggiunta una penalizzazione matematica, tipicamente basata sulla norma $L_1$:
+
+\[
+\lambda \|h\|_1
+\]
+
+Questo termine forza il modello a utilizzare solo un numero molto limitato di neuroni attivi per ogni input.
+
+L'obiettivo è ottenere rappresentazioni in cui:
+
+\begin{itemize}
+    \item pochi neuroni risultano attivi;
+    \item la maggior parte delle feature rimane pari a zero.
+\end{itemize}
+
+La penalizzazione forza il modello a:
+
+\begin{itemize}
+    \item utilizzare pochissime feature contemporaneamente;
+    \item mantenere inattiva la maggior parte dei neuroni;
+    \item produrre attivazioni sparse.
+\end{itemize}
+
+\subsection{Sparse Features}
+
+Le feature generate dagli Sparse Autoencoders vengono chiamate \textit{Sparse Features}.
+
+L'idea fondamentale è che ogni feature possa rappresentare un singolo concetto semanticamente coerente.
+
+Ad esempio:
+
+\begin{itemize}
+    \item una feature può rappresentare un versamento pleurico;
+    \item un'altra può rappresentare il polmone destro;
+    \item un'altra ancora può codificare specifiche anomalie anatomiche.
+\end{itemize}
+
+In teoria, le sparse features risultano quindi molto più interpretabili rispetto ai neuroni polisemantici originali.
+
+\section{Disentanglement}
+
+Il risultato finale del processo di sparsificazione prende il nome di \textit{Disentanglement}.
+
+Il termine indica la capacità di:
+
+\begin{itemize}
+    \item separare concetti mescolati;
+    \item isolare fattori latenti indipendenti;
+    \item ottenere rappresentazioni semanticamente organizzate.
+\end{itemize}
+
+Nei Vision-Language Models originali, differenti concetti risultano fortemente intrecciati all'interno degli stessi neuroni.
+
+Gli Sparse Autoencoders cercano invece di:
+
+\begin{itemize}
+    \item districare tali rappresentazioni;
+    \item associare concetti differenti a feature differenti;
+    \item produrre attivazioni maggiormente monosemantiche.
+\end{itemize}
+
+\section{Collegamento con MedConcept}
+
+Il framework \textit{MedConcept} utilizza proprio Sparse Autoencoders per estrarre concetti latenti interpretabili dai Vision-Language Models medici.
+
+L'obiettivo è ottenere:
+
+\begin{itemize}
+    \item scoperta non supervisionata di concetti;
+    \item interpretabilità neuronale;
+    \item allineamento semantico con terminologia clinica;
+    \item maggiore trasparenza delle rappresentazioni latenti.
+\end{itemize}
+
+A differenza di approcci supervisionati come TCAV o Concept Bottleneck Models, MedConcept non richiede annotazioni manuali preventive.
+
+I concetti vengono invece scoperti automaticamente direttamente dalle attivazioni neurali del modello.
+
+Questo rappresenta uno degli aspetti più innovativi e promettenti dell'intero framework.
