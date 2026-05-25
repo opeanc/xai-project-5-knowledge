@@ -6,3 +6,362 @@
 %   semantic similarity,
 %   LLM-as-a-judge.
 %
+\chapter{Evaluation Metrics and Semantic Assessment}
+
+\section{Introduzione}
+
+La fase di valutazione rappresenta uno degli aspetti più critici dell'intero framework di Explainable AI.
+
+Una pipeline di estrazione concettuale può infatti produrre risultati apparentemente interpretabili, ma senza metriche adeguate risulta impossibile verificare:
+
+\begin{itemize}
+    \item la correttezza semantica dei concetti;
+    \item la coerenza clinica delle feature estratte;
+    \item la reale utilità interpretativa del modello.
+\end{itemize}
+
+Storicamente, molti approcci di interpretabilità venivano valutati tramite semplici ispezioni qualitative manuali.
+
+Tale metodologia presenta tuttavia importanti limitazioni:
+
+\begin{itemize}
+    \item forte soggettività;
+    \item scarsa riproducibilità;
+    \item elevato costo umano;
+    \item impossibilità di scalare su grandi dataset.
+\end{itemize}
+
+Per affrontare questo problema, MedConcept introduce una pipeline di valutazione automatizzata basata sul paradigma:
+
+\begin{quote}
+\textit{LLM-as-a-Judge}
+\end{quote}
+
+\section{LLM-as-a-Judge}
+
+\subsection{Paradigma Generale}
+
+L'approccio \textit{LLM-as-a-Judge} consiste nell'utilizzare un Large Language Model come valutatore esterno e indipendente.
+
+\subsection{Utilizzo di MedGemma}
+
+Nel lavoro originale, gli autori utilizzano un LLM medico pre-addestrato chiamato \textbf{MedGemma}.
+
+Il modello viene mantenuto \textit{frozen}, ovvero:
+
+\begin{itemize}
+    \item senza aggiornamento dei pesi;
+    \item senza fine-tuning aggiuntivo;
+    \item utilizzato esclusivamente per inferenza semantica.
+\end{itemize}
+
+\subsection{Flusso di Valutazione}
+
+Il processo di evaluation avviene secondo i seguenti passaggi:
+
+\begin{enumerate}
+    \item il framework estrae i concetti latenti tramite Sparse Autoencoders;
+    
+    \item i concetti vengono associati a terminologia clinica tramite semantic alignment;
+    
+    \item il sistema fornisce all'LLM:
+    \begin{itemize}
+        \item il referto radiologico reale;
+        \item i concetti predetti dal modello;
+    \end{itemize}
+    
+    \item l'LLM valuta ogni concetto singolarmente e calcola la probabilità che questo appartenga a tre specifici stati clinici (\textit{Aligned}, \textit{Unaligned} e \textit{Uncertain}), restituendo un verdetto finale;
+\end{enumerate}
+
+\section{Metriche Principali di MedConcept}
+
+MedConcept introduce tre metriche fondamentali per quantificare l'allineamento semantico tra concetti estratti e contenuto clinico.
+
+Sia:
+
+\[
+\mathcal{P} = \{p_1, p_2, ..., p_n\}
+\]
+
+l'insieme dei concetti predetti dal framework.
+
+Per ciascuna categoria:
+
+\[
+c \in \{\text{Aligned}, \text{Unaligned}, \text{Uncertain}\}
+\]
+
+viene definito uno score calcolato come:
+
+\[
+\text{Score}(c) = \frac{1}{|\mathcal{P}|}
+\sum_{i=1}^{|\mathcal{P}|}
+\mathbf{1}(v_i = c)
+\]
+
+dove:
+
+\begin{itemize}
+    \item $v_i$ rappresenta il verdetto assegnato dall'LLM al concetto $p_i$;
+    \item $\mathbf{1}(\cdot)$ rappresenta la funzione indicatrice;
+    \item $|\mathcal{P}|$ rappresenta il numero totale di concetti predetti.
+\end{itemize}
+
+\section{Aligned}
+
+\subsection{Definizione}
+
+La categoria \textit{Aligned} misura il grado di supporto semantico tra:
+
+\begin{itemize}
+    \item concetti predetti dal framework;
+    \item contenuto del referto clinico.
+\end{itemize}
+
+Un concetto viene classificato come aligned quando il referto:
+
+\begin{itemize}
+    \item conferma esplicitamente il concetto;
+    \item oppure contiene evidenze semanticamente compatibili.
+\end{itemize}
+
+\subsection{Esempio}
+
+Ad esempio:
+
+\begin{itemize}
+    \item il framework predice ``Hepatomegaly'';
+    \item il referto riporta ``enlarged liver''.
+\end{itemize}
+
+In questo caso il concetto viene considerato semanticamente coerente.
+
+\section{Unaligned}
+
+\subsection{Definizione}
+
+La categoria \textit{Unaligned} rappresenta situazioni di:
+
+\begin{itemize}
+    \item contraddizione semantica;
+    \item assenza di supporto testuale;
+    \item incompatibilità clinica.
+\end{itemize}
+
+Il concetto predetto non trova conferma nel referto oppure viene esplicitamente negato.
+
+\subsection{Aspetto Critico}
+
+Uno degli aspetti più importanti evidenziati nel paper di MedConcept riguarda il fatto che:
+
+\begin{quote}
+un concetto classificato come ``Unaligned'' non implica necessariamente che il modello abbia commesso un errore clinico.
+\end{quote}
+
+I referti medici tendono infatti a:
+
+\begin{itemize}
+    \item omettere strutture anatomiche normali;
+    \item descrivere soltanto anomalie rilevanti;
+    \item fornire informazioni parziali.
+\end{itemize}
+
+Di conseguenza, alcuni concetti corretti potrebbero risultare assenti dal referto pur essendo realmente presenti nell'immagine.
+
+\subsection{Esempio}
+
+Ad esempio:
+
+\begin{itemize}
+    \item il framework identifica ``Normal Kidney'';
+    \item il referto non menziona il rene.
+\end{itemize}
+
+Il concetto potrebbe essere classificato come unaligned pur non rappresentando necessariamente un errore del modello.
+
+\section{Uncertain}
+
+\subsection{Definizione}
+
+La categoria \textit{Uncertain} rappresenta situazioni caratterizzate da ambiguità semantica.
+
+In questi casi:
+
+\begin{itemize}
+    \item il concetto predetto risulta plausibile;
+    \item il referto non contiene informazioni sufficienti;
+    \item non è possibile determinare con certezza la correttezza del concetto.
+\end{itemize}
+
+\subsection{Descrittori Generici}
+
+Questa categoria compare frequentemente per concetti:
+
+\begin{itemize}
+    \item troppo generici;
+    \item descrittivi;
+    \item privi di specificità clinica.
+\end{itemize}
+
+Ad esempio:
+
+\begin{itemize}
+    \item ``hypodense'';
+    \item ``necrotic'';
+    \item ``hyperintense''.
+\end{itemize}
+
+Tali descrittori risultano spesso difficili da verificare direttamente tramite referti clinici sintetici o incompleti.
+
+\section{Semantic Similarity}
+
+\subsection{Ruolo della Similarità Semantica}
+
+La similarità semantica non rappresenta una metrica di evaluation post-hoc, ma costituisce il meccanismo centrale della fase di:
+
+\begin{quote}
+\textit{Concept Naming}
+\end{quote}
+
+L'obiettivo consiste nell'associare le sparse features estratte dal SAE a concetti clinicamente interpretabili provenienti da ontologie come UMLS.
+
+\subsection{Cosine Similarity}
+
+Per ciascuna feature sparsa:
+
+\[
+w_j
+\]
+
+viene calcolata la similarità rispetto agli embeddings testuali:
+
+\[
+e_i
+\]
+
+dei concetti candidati.
+
+La misura utilizzata è la \textit{Cosine Similarity}:
+
+\[
+\alpha_{ij} =
+\frac{w_j^{T} e_i}
+{\lVert w_j \rVert_2 \, \lVert e_i \rVert_2}
+\]
+
+dove:
+
+\begin{itemize}
+    \item $w_j$ rappresenta la sparse feature;
+    \item $e_i$ rappresenta l'embedding testuale del concetto;
+    \item $\alpha_{ij}$ rappresenta il grado di similarità semantica.
+\end{itemize}
+
+Il concetto finale viene assegnato scegliendo il termine che massimizza il punteggio di similarità.
+
+\section{Metriche Aggiuntive}
+
+Il progetto evidenzia una problematica importante:
+
+\begin{quote}
+la dipendenza da referti clinici incompleti o rumorosi può compromettere la qualità della valutazione.
+\end{quote}
+
+Per questo motivo, può risultare utile introdurre metriche aggiuntive che valutino direttamente il comportamento del modello.
+
+\section{Faithfulness / Fidelity}
+
+\subsection{Obiettivo}
+
+Le metriche di \textit{Faithfulness} misurano quanto un concetto scoperto influenzi realmente la decisione finale del modello.
+
+L'obiettivo consiste nel verificare se il concetto sia causalmente rilevante oppure rappresenti semplice rumore correlato.
+
+\subsection{Concept Masking}
+
+Una possibile metodologia consiste nel:
+
+\begin{enumerate}
+    \item identificare una sparse feature altamente attiva;
+    
+    \item forzare artificialmente la sua attivazione a zero;
+    
+    \item osservare la variazione nella predizione finale del modello.
+\end{enumerate}
+
+Se la probabilità diagnostica diminuisce drasticamente, il concetto viene considerato semanticamente rilevante.
+
+\section{Concept Sparsity}
+
+\subsection{Obiettivo}
+
+Le metriche di sparsità valutano la qualità delle rappresentazioni generate dal SAE.
+
+L'obiettivo consiste nel verificare se:
+
+\begin{itemize}
+    \item i neuroni risultino realmente monosemantici;
+    \item le attivazioni siano sufficientemente sparse.
+\end{itemize}
+
+\subsection{Metriche Possibili}
+
+Possibili misure includono:
+
+\begin{itemize}
+    \item norma $L_0$ delle attivazioni;
+    \item entropia delle sparse features;
+    \item numero medio di neuroni attivi per immagine.
+\end{itemize}
+
+Bassa entropia e poche attivazioni simultanee indicano generalmente concetti maggiormente interpretabili.
+
+\section{Inter-Concept Diversity}
+
+\subsection{Obiettivo}
+
+Le metriche di \textit{Inter-Concept Diversity} misurano la diversità semantica tra i concetti estratti.
+
+Molto spesso il modello tende infatti a produrre:
+
+\begin{itemize}
+    \item feature ridondanti;
+    \item concetti duplicati;
+    \item rappresentazioni semanticamente sovrapposte.
+\end{itemize}
+
+\subsection{Misurazione}
+
+Una possibile strategia consiste nel calcolare:
+
+\begin{itemize}
+    \item la distanza media del coseno;
+    \item oppure la similarità media
+\end{itemize}
+
+tra tutte le sparse features del dizionario.
+
+Elevata diversità indica una libreria di concetti più ricca e meno ridondante.
+
+\section{Considerazioni Finali}
+
+La valutazione rappresenta uno degli aspetti più delicati dell'intero framework.
+
+Le metriche introdotte da MedConcept consentono di:
+
+\begin{itemize}
+    \item automatizzare la valutazione semantica;
+    \item ridurre la dipendenza da ispezioni qualitative;
+    \item misurare quantitativamente l'allineamento concettuale.
+\end{itemize}
+
+Tuttavia, l'affidabilità delle metriche dipende fortemente da:
+
+\begin{itemize}
+    \item qualità dei referti clinici;
+    \item robustezza degli LLM utilizzati;
+    \item correttezza del semantic alignment;
+    \item qualità delle sparse representations.
+\end{itemize}
+
+Per questo motivo, l'integrazione di metriche aggiuntive può risultare fondamentale per ottenere una valutazione più robusta e clinicamente significativa.
