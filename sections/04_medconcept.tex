@@ -8,3 +8,344 @@
 %   strengths,
 %   weaknesses.
 %
+\chapter{The MedConcept Framework}
+
+\section{Introduzione}
+
+Il framework \textit{MedConcept} rappresenta uno degli approcci più recenti e promettenti nell'ambito della \textit{Concept-Based Explainability} applicata ai Vision-Language Models medici.
+
+L'obiettivo principale del framework consiste nell'estrarre automaticamente concetti medici interpretabili dalle rappresentazioni latenti dei VLM e collegarli a semantiche clinicamente significative.
+
+Uno degli aspetti più innovativi di MedConcept è che l'intero processo di scoperta dei concetti avviene in maniera:
+
+\begin{itemize}
+    \item non supervisionata;
+    \item task-agnostic;
+    \item indipendente da annotazioni manuali esplicite.
+\end{itemize}
+
+Questo rende il framework potenzialmente applicabile a differenti:
+
+\begin{itemize}
+    \item dataset;
+    \item architetture;
+    \item task clinici.
+\end{itemize}
+
+La pipeline di MedConcept può essere suddivisa in tre fasi principali:
+
+\begin{enumerate}
+    \item \textbf{Extraction};
+    \item \textbf{Alignment};
+    \item \textbf{Evaluation}.
+\end{enumerate}
+
+\section{Extraction Phase}
+
+La fase di \textit{Extraction} affronta direttamente il problema della polisemanticità delle rappresentazioni latenti dei Vision-Language Models.
+
+\subsection{Ruolo del Vision-Language Model}
+
+Il primo passo consiste nell'utilizzare un Vision-Language Model medico pre-addestrato, come ad esempio:
+
+\begin{itemize}
+    \item MedCLIP;
+    \item BioCLIP;
+    \item altri VLM specializzati nel dominio biomedicale.
+\end{itemize}
+
+Il modello viene utilizzato per processare grandi quantità di immagini mediche.
+
+Per ciascuna immagine vengono estratti gli embeddings latenti prodotti dal VLM.
+
+Tali embeddings rappresentano il punto di partenza della pipeline.
+
+\subsection{Ruolo degli Sparse Autoencoders}
+
+Successivamente, gli embeddings vengono utilizzati come input per uno Sparse Autoencoder.
+
+L'obiettivo del SAE consiste nel:
+
+\begin{itemize}
+    \item separare concetti differenti;
+    \item ridurre la polisemanticità;
+    \item identificare attivazioni sparse a livello neuronale.
+\end{itemize}
+
+Durante il training, il SAE applica vincoli di sparsità che costringono il modello ad attivare soltanto un numero limitato di feature per ciascun input.
+
+Questo processo consente di trasformare le rappresentazioni latenti originali in un nuovo spazio caratterizzato da feature sparse e maggiormente interpretabili.
+
+\subsection{Risultato della Fase di Extraction}
+
+Il risultato finale della fase di extraction consiste nella costruzione di un dizionario di:
+
+\begin{itemize}
+    \item sparse features;
+    \item neuroni maggiormente monosemantici;
+    \item concetti visivi latenti isolati.
+\end{itemize}
+
+Idealmente, ciascuna feature estratta dovrebbe rappresentare un concetto semanticamente coerente, ad esempio:
+
+\begin{itemize}
+    \item versamento pleurico;
+    \item opacità polmonare;
+    \item forma anatomica di specifiche strutture.
+\end{itemize}
+
+\section{Alignment Phase}
+
+Una volta estratti i concetti latenti, emerge un nuovo problema:
+
+\begin{quote}
+le feature sparse risultano interpretabili matematicamente, ma non possiedono ancora una descrizione semantica esplicita.
+\end{quote}
+
+La fase di \textit{Alignment} ha quindi l'obiettivo di associare tali feature a concetti clinicamente significativi.
+
+\subsection{Ontologie Mediche}
+
+Per effettuare questo allineamento semantico, MedConcept utilizza ontologie mediche curate, tra cui:
+
+\begin{itemize}
+    \item UMLS (\textit{Unified Medical Language System}).
+\end{itemize}
+
+\subsection{Unified Medical Language System}
+
+L'UMLS rappresenta uno dei principali sistemi di standardizzazione della terminologia biomedica.
+
+Il framework integra:
+
+\begin{itemize}
+    \item concetti medici;
+    \item terminologia clinica;
+    \item relazioni anatomiche;
+    \item informazioni diagnostiche;
+    \item vocabolari biomedicali differenti.
+\end{itemize}
+
+L'ontologia contiene milioni di concetti strutturati e semanticamente collegati.
+
+\subsection{Semantic Alignment}
+
+Il processo di alignment avviene nel seguente modo:
+
+\begin{enumerate}
+    \item i concetti testuali provenienti da UMLS vengono processati tramite il text encoder del VLM;
+    
+    \item per ciascun concetto viene generato un embedding testuale;
+    
+    \item tali embeddings vengono confrontati con le sparse features estratte dal SAE;
+    
+    \item il framework misura la similarità semantica tra rappresentazioni visive e testuali.
+\end{enumerate}
+
+Se una specifica sparse feature mostra forte similarità con il concetto testuale ``Pleural Effusion'', il framework associa semanticamente quella feature al relativo concetto medico.
+
+Questo processo permette di trasformare attivazioni neurali astratte in concetti clinicamente interpretabili.
+
+\section{Evaluation Phase}
+
+La valutazione rappresenta una delle componenti più complesse dell'intero framework.
+
+Nel contesto della \textit{Concept-Based Explainability}, valutare automaticamente la qualità dei concetti estratti costituisce una sfida aperta, poiché le semplici analisi qualitative risultano:
+
+\begin{itemize}
+    \item soggettive;
+    \item difficilmente scalabili;
+    \item dipendenti dall'interpretazione umana.
+\end{itemize}
+
+Per affrontare questo problema, MedConcept introduce una metodologia di valutazione basata sull'utilizzo di Large Language Models come valutatori semantici esterni.
+
+\subsection{LLM-as-a-Judge}
+
+Nel framework originale, gli autori propongono l'utilizzo di un Large Language Model come ``giudice'' semantico per confrontare:
+
+\begin{itemize}
+    \item i concetti identificati dal framework;
+    \item le evidenze cliniche presenti nei referti medici reali.
+\end{itemize}
+
+L'obiettivo consiste nel verificare se i concetti estratti automaticamente risultino coerenti con il contenuto testuale del referto clinico associato all'immagine.
+
+Nel lavoro originale di MedConcept, gli autori definiscono:
+
+\begin{itemize}
+    \item la logica generale di valutazione;
+    \item la metodologia di prompting;
+    \item le categorie di classificazione semantica.
+\end{itemize}
+
+Il Large Language Model riceve in input:
+
+\begin{itemize}
+    \item i concetti predetti dal framework;
+    \item il referto clinico reale;
+    \item istruzioni specifiche per valutare la coerenza semantica.
+\end{itemize}
+
+Il modello restituisce quindi una classificazione qualitativa relativa all'allineamento tra concetti estratti e contenuto clinico.
+
+\subsection{Metriche di Valutazione}
+
+MedConcept formalizza tre categorie principali per la valutazione semantica.
+
+\subsubsection{Aligned}
+
+La categoria \textit{Aligned} rappresenta situazioni in cui:
+
+\begin{itemize}
+    \item il concetto identificato dal framework;
+    \item e il contenuto del referto clinico
+\end{itemize}
+
+risultano semanticamente coerenti.
+
+In questo caso il concetto viene considerato correttamente identificato.
+
+\subsubsection{Unaligned}
+
+La categoria \textit{Unaligned} rappresenta invece una contraddizione semantica.
+
+Il framework identifica un concetto che il referto:
+
+\begin{itemize}
+    \item nega esplicitamente;
+    \item oppure non supporta.
+\end{itemize}
+
+Ad esempio:
+
+\begin{itemize}
+    \item il modello identifica ``Cardiomegalia'';
+    \item il referto descrive un cuore di dimensioni normali.
+\end{itemize}
+
+\subsubsection{Uncertain}
+
+La categoria \textit{Uncertain} rappresenta situazioni ambigue.
+
+In questi casi:
+
+\begin{itemize}
+    \item il framework predice un concetto;
+    \item il referto non lo conferma;
+    \item il referto non lo nega esplicitamente.
+\end{itemize}
+
+Questo scenario è molto comune in ambito medico, poiché i radiologi tendono spesso a descrivere soltanto anomalie rilevanti, omettendo strutture anatomiche considerate normali.
+
+\subsection{Aspetti Implementativi}
+
+Dal punto di vista teorico, MedConcept introduce quindi:
+
+\begin{itemize}
+    \item la metodologia di valutazione;
+    \item il paradigma ``LLM-as-a-Judge'';
+    \item le metriche semantiche principali.
+\end{itemize}
+
+Tuttavia, ciò non implica necessariamente l'esistenza di una libreria software pronta all'uso o di un framework completamente integrabile tramite semplici import.
+
+Nel contesto del progetto, la fase di evaluation richiederà quindi:
+
+\begin{itemize}
+    \item implementazione o adattamento della pipeline di valutazione;
+    \item integrazione di API per Large Language Models;
+    \item progettazione dei prompt di valutazione;
+    \item parsing delle risposte generate dal modello;
+    \item calcolo finale delle metriche quantitative.
+\end{itemize}
+
+\section{Punti di Forza del Framework}
+
+MedConcept introduce diversi elementi innovativi rispetto ai metodi tradizionali di explainability.
+
+Tra i principali vantaggi troviamo:
+
+\begin{itemize}
+    \item scoperta non supervisionata dei concetti;
+    
+    \item riduzione della dipendenza da annotazioni manuali;
+    
+    \item approccio task-agnostic;
+    
+    \item utilizzo di sparse representations interpretabili;
+    
+    \item integrazione con ontologie mediche ufficiali;
+    
+    \item valutazione quantitativa automatizzata.
+\end{itemize}
+
+\section{Limiti e Sfide Aperte}
+
+Nonostante i risultati promettenti, il framework presenta ancora importanti limitazioni.
+
+\subsection{Validità Clinica}
+
+I concetti scoperti automaticamente potrebbero non possedere reale significato clinico.
+
+Alcune feature potrebbero infatti rappresentare:
+
+\begin{itemize}
+    \item artefatti visivi;
+    \item correlazioni spurie;
+    \item pattern statistici privi di interpretazione medica.
+\end{itemize}
+
+\subsection{Bias dei Modelli}
+
+L'utilizzo di VLM e LLM pre-addestrati introduce possibili fonti di bias.
+
+I problemi possono derivare da:
+
+\begin{itemize}
+    \item dataset sbilanciati;
+    \item errori nei referti clinici;
+    \item incompletezza delle annotazioni;
+    \item variabilità delle risposte generate;
+    \item sensibilità ai prompt utilizzati;
+    \item bias linguistici dei Large Language Models.
+\end{itemize}
+
+Di conseguenza, le metriche ottenute non devono essere considerate come verità assolute, ma come una stima automatizzata del grado di coerenza semantica tra concetti estratti e contenuto clinico.
+
+\subsection{Limitazioni della Valutazione}
+
+La valutazione basata sui referti clinici presenta ulteriori criticità.
+
+Molti referti:
+
+\begin{itemize}
+    \item omettono informazioni considerate normali;
+    \item risultano incompleti;
+    \item descrivono solo anomalie clinicamente rilevanti.
+\end{itemize}
+
+Questo può influenzare negativamente le metriche di alignment.
+
+\subsection{Assenza di Relazioni Strutturate}
+
+Uno dei limiti più importanti riguarda il fatto che MedConcept tratta i concetti come entità indipendenti.
+
+Il framework non modella esplicitamente:
+
+\begin{itemize}
+    \item gerarchie anatomiche;
+    \item dipendenze causali;
+    \item relazioni spaziali;
+    \item strutture semantiche complesse.
+\end{itemize}
+
+Ad esempio:
+
+\begin{itemize}
+    \item il ventricolo sinistro è parte del cuore;
+    \item alcune patologie causano specifici pattern radiografici;
+    \item esistono dipendenze cliniche tra differenti anomalie.
+\end{itemize}
+
+Queste relazioni risultano fondamentali in medicina ma non vengono ancora integrate esplicitamente nel framework.
